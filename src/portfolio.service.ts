@@ -9,14 +9,28 @@ export class PortfolioService {
   };
 
   addTrade(addTradeDto: AddTradeDto): { message: string } {
+   // Validate the request to ensure it only contains the required properties
+   const { purchasingType, ticker, qty, price } = addTradeDto;
+    
+   if (Object.keys(addTradeDto).length !== 4 || !purchasingType || !ticker || !qty || !price) {
+     throw new BadRequestException('Invalid request. Required properties: type, ticker, qty, price');
+   }
+   if(qty<=0) {
+    throw new BadRequestException('Invalid request. inptut qantity in negative');
+
+   }
+   // Validate the type to ensure it's either "Buy" or "Sell"
+   if (purchasingType !== 'Buy' && purchasingType !== 'Sell') {
+     throw new BadRequestException('Invalid trade type. Type must be "Buy" or "Sell"');
+   }
     // Create a new SecurityDto object
     const trade: TradeDto = {
       ticker: addTradeDto.ticker,
       qty: addTradeDto.qty,
-      type: addTradeDto.type,
+      type: addTradeDto.purchasingType,
       success: false, // Initialize with failure status
     };
-    let type = addTradeDto.type;
+    let type = addTradeDto.purchasingType;
     if (type === 'Sell') {   //if the req is for sell
       let ticker = addTradeDto.ticker;
       for (const security of this.portfolio.securities) {
